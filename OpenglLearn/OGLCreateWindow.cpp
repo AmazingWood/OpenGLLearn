@@ -38,16 +38,23 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     std::array<float, 9> vertices = {
     -0.5f, -0.5f, 0.0f,
      0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
+     0.0f,  0.25f, 0.0f,
+    };
+    std::array<float, 9> secondTriangle = {
+    0.0f, 0.25f, 0.0f,
+    -0.5f, 1.0f, 0.0f,
+    0.5f, 1.0f, 0.0f,
     };
 
+    std::unique_ptr<unsigned int[]> VAOs = std::make_unique<unsigned int[]>(2);
+    std::unique_ptr<unsigned int[]> VBOs = std::make_unique<unsigned int[]>(2);
     //Create a VAO and a VBO
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    glGenVertexArrays(2, &VAOs[0]);
+    glGenBuffers(2, &VBOs[0]);
 
     //Bind VAO and VBO
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindVertexArray(VAOs[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
 
     //copy the points to the Buffer params desc: 1.buffer type; 2.data size; 3.the data; 4.manage method type;
     //The types of the manage method:
@@ -55,11 +62,23 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     //  2.GL_DYNAMIC_DRAW: a lot of change;
     //  3.GL_STREAM_DRAW : it will change each times when it draws to the window.
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    //Bind VAO and VBO
+    glBindVertexArray(VAOs[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(secondTriangle), secondTriangle.data(), GL_STATIC_DRAW);
+
 
     unsigned int vertexShaderID = shaderCompiler(shaderType::Vertex, vertexShaderPath);
     unsigned int fragmentShaderID = shaderCompiler(shaderType::Fragment, fragmentShaderPath);
+    std::vector<fs::path> fragmentYellow;
+    fragmentYellow.push_back("./FragmentShaderYellow.glsl");
+    unsigned int fragmentYellowShaderID = shaderCompiler(shaderType::Fragment, fragmentYellow);
 
     unsigned int shaderProgramID = shaderProgramCreator(vertexShaderID, fragmentShaderID);
+    unsigned int shaderProgramID2 = shaderProgramCreator(vertexShaderID, fragmentYellowShaderID);
     //tell how to desc the vetex to the device
     /*
         glVertexAttribPointer params instuctrion:
@@ -79,7 +98,11 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     while (!glfwWindowShouldClose(window))
     {
         glUseProgram(shaderProgramID);
-        glBindVertexArray(VAO);
+        glBindVertexArray(VAOs[0]);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        //shaderProgram2
+        glUseProgram(shaderProgramID2);
+        glBindVertexArray(VAOs[1]);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -189,6 +212,8 @@ OGLCreateWindow::~OGLCreateWindow()
     for (auto p : shaderProgramList) {
         glDeleteProgram(p);
     }
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
     glfwDestroyWindow(window);
     glfwTerminate();
 }
