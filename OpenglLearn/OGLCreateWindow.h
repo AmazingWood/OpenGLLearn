@@ -25,7 +25,7 @@ private:
 	fs::path fragmentShaderPath;
 	unsigned int VAO, VBO;
 	//return shaderCode list
-	int shaderCompiler(shaderType typeName, fs::path vertexShaderPath);
+	int shaderCompiler(shaderType typeName, std::vector<fs::path> shaderPath);
 	std::vector<std::string> shaderReader(std::vector<fs::path> shaderPath);
 public:
 	OGLCreateWindow(int width, int height, std::string windowName);

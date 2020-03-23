@@ -57,73 +57,32 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     //  3.GL_STREAM_DRAW : it will change each times when it draws to the window.
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
 
-    //read the vertexshader
-    std::vector<std::string> vertexShaderCode = shaderReader(vertexShaderPath);
-    std::unique_ptr<const char*[]> vertexShaderCodeCharPointerList = std::make_unique<const char*[]>(vertexShaderCode.size());
-
-    for (int i = 0; i < vertexShaderCode.size(); i++) {
-        vertexShaderCodeCharPointerList[i] = vertexShaderCode[i].c_str();
-    }
-
-    auto vertexShaderCodeCPoint = vertexShaderCodeCharPointerList.get();
-    //create a vertexshader ID 
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-    //compile the shaderCode
-    glShaderSource(vertexShader, vertexShaderCode.size(), vertexShaderCodeCPoint, NULL);
-    glCompileShader(vertexShader);
-
-    //check the compile status
-    int checkCompileStatus;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &checkCompileStatus);
-    if (checkCompileStatus != 1) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    //read the fragmentshader
-    std::vector<std::string> fragmentShaderCode = shaderReader(fragmentShaderPath);
-    std::unique_ptr<const char* []> fragmentShaderCodeCharPointerList = std::make_unique<const char* []>(fragmentShaderCode.size());
-
-    for (int i = 0; i < fragmentShaderCode.size(); i++) {
-        fragmentShaderCodeCharPointerList[i] = fragmentShaderCode[i].c_str();;
-    }
-
-    auto fragmentShaderCodeCPoint = fragmentShaderCodeCharPointerList.get();
-
-    //create a fragmentShader ID 
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-    //compile the shaderCode
-    glShaderSource(fragmentShader, fragmentShaderCode.size(), fragmentShaderCodeCPoint, NULL);
-    glCompileShader(fragmentShader);
+    int vertexShaderID = shaderCompiler(Vertex, vertexShaderPath);
+    int fragmentShaderID = shaderCompiler(Fragment, fragmentShaderPath);
 
     //create a shader program
     unsigned int shaderProgram;
     shaderProgram = glCreateProgram();
 
     //link the shaderprogram, veterx and fragment shader to one.
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
+    glAttachShader(shaderProgram, vertexShaderID);
+    glAttachShader(shaderProgram, fragmentShaderID);
     glLinkProgram(shaderProgram);
 
     //check the link status
-    int checLinkStatus;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &checLinkStatus);
-    if (!checLinkStatus) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::LINK_FAILED\n" << infoLog << std::endl;
-    }
+    //int checLinkStatus;
+    //glGetProgramiv(shaderProgram, GL_LINK_STATUS, &checLinkStatus);
+    //if (!checLinkStatus) {
+    //    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+    //    std::cout << "ERROR::LINK_FAILED\n" << infoLog << std::endl;
+    //}
 
     //activate the shader program
     glUseProgram(shaderProgram);
 
     //now the shader is useless delete them when it is useless.
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    glDeleteShader(vertexShaderID);
+    glDeleteShader(fragmentShaderID);
 
     //tell how to desc the vetex to the device
     /*
@@ -153,9 +112,44 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     }
 }
 
-int OGLCreateWindow::shaderCompiler(shaderType typeName, fs::path vertexShaderPath)
+int OGLCreateWindow::shaderCompiler(shaderType typeName, std::vector<fs::path> shaderPath)
 {
-    return 0;
+    //read the shader
+    std::vector<std::string> ShaderCode = shaderReader(shaderPath);
+    std::unique_ptr<const char* []> ShaderCodeCharPointerList = std::make_unique<const char* []>(ShaderCode.size());
+
+    for (int i = 0; i < ShaderCode.size(); i++) {
+        ShaderCodeCharPointerList[i] = ShaderCode[i].c_str();
+    }
+
+    auto ShaderCodeCPoint = ShaderCodeCharPointerList.get();
+
+    //create a shader ID 
+    unsigned int shaderID;
+    if (typeName == Vertex) {
+        shaderID = glCreateShader(GL_VERTEX_SHADER);
+    }
+    else if (typeName == Fragment) {
+        shaderID = glCreateShader(GL_FRAGMENT_SHADER);
+    }
+    else {
+        throw std::logic_error("Wrong Shader Type!");
+    }
+
+    //compile the shaderCode
+    glShaderSource(shaderID, ShaderCode.size(), ShaderCodeCPoint, NULL);
+    glCompileShader(shaderID);
+
+    //check the compile status
+    int checkCompileStatus;
+    char infoLog[512];
+    glGetShaderiv(shaderID, GL_COMPILE_STATUS, &checkCompileStatus);
+    if (checkCompileStatus != 1) {
+        glGetShaderInfoLog(shaderID, 512, NULL, infoLog);
+        std::string errLog = infoLog;
+        throw std::logic_error("ERROR::SHADER::COMPILATION_FAILED" + errLog);
+    }
+    return shaderID;
 }
 
 std::vector<std::string> OGLCreateWindow::shaderReader(std::vector<fs::path> shaderPath)

@@ -156,7 +156,6 @@
     <ClInclude Include="OGLCreateWindow.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="EmptyVertexShader.glsl" />
     <None Include="SimpleFragmentShader.glsl" />
     <None Include="SimpleVertexShader.glsl" />
   </ItemGroup>
