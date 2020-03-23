@@ -11,6 +11,12 @@ namespace fs = std::filesystem;
 
 int main() {
     OGLCreateWindow newWindow(1280, 720, "Hello World");
-    newWindow.createWindow();
+
+    std::vector<fs::path> VertexShaderList;
+    std::vector<fs::path> FragmentShaderList;
+    VertexShaderList.push_back("./SimpleVertexShader.glsl");
+    VertexShaderList.push_back("./EmptyVertexShader.glsl");
+    FragmentShaderList.push_back("./SimpleFragmentShader.glsl");
+    newWindow.createWindowWithShader(VertexShaderList, FragmentShaderList);
     return 0;
 }

@@ -32,7 +32,7 @@ OGLCreateWindow::OGLCreateWindow(int windowWidth, int windowHeight, std::string 
     glfwSetFramebufferSizeCallback(window, OGLCallBack::framebuffer_size_callback);
 }
 
-void OGLCreateWindow::createWindow()
+void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderPath, std::vector<fs::path> fragmentShaderPath)
 {
     //create a triangle's point list
     std::array<float, 9> vertices = {
@@ -41,40 +41,13 @@ void OGLCreateWindow::createWindow()
      0.0f,  0.5f, 0.0f
     };
 
-    // float squares[]
-    std::array<float, 12> squares = {
-    0.5f, 0.5f, 0.0f,   // 右上角
-    0.5f, -0.5f, 0.0f,  // 右下角
-    -0.5f, -0.5f, 0.0f, // 左下角
-    -0.5f, 0.5f, 0.0f   // 左上角
-    };
-
-    unsigned int indices[] = { // 注意索引从0开始! 
-    0, 1, 3, // 第一个三角形
-    1, 2, 3  // 第二个三角形
-    };
-    //Create a fuckin VAO, how fun it is, mother fucker
-    unsigned int VAO;
+    //Create a VAO and a VBO
+    
     glGenVertexArrays(1, &VAO);
-
-
-    //Create a buffer called VBO and give it a ID , ID is 1
-    unsigned int VBO;
     glGenBuffers(1, &VBO);
 
-
-
-    //this is a EBO LOL
-    //unsigned int EBO;
-    //glGenBuffers(1, &EBO);
-
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
+    //Bind VAO and VBO
     glBindVertexArray(VAO);
-
-
-    //bind the buffer type to the ID
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     //copy the points to the Buffer params desc: 1.buffer type; 2.data size; 3.the data; 4.manage method type;
@@ -84,20 +57,21 @@ void OGLCreateWindow::createWindow()
     //  3.GL_STREAM_DRAW : it will change each times when it draws to the window.
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
 
-
-
-
     //read the vertexshader
-    fs::path vertexShaderPath = "./SimpleVertexShader.glsl";
+    std::vector<std::string> vertexShaderCode = shaderReader(vertexShaderPath);
+    std::unique_ptr<const char*[]> vertexShaderCodeCharPointerList = std::make_unique<const char*[]>(vertexShaderCode.size());
 
-    std::string shaderCode = shaderReader(vertexShaderPath).data();
-    const char* vertexShaderCodeChar = shaderCode.c_str();
+    for (int i = 0; i < vertexShaderCode.size(); i++) {
+        vertexShaderCodeCharPointerList[i] = vertexShaderCode[i].c_str();
+    }
+
+    auto vertexShaderCodeCPoint = vertexShaderCodeCharPointerList.get();
     //create a vertexshader ID 
     unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
     //compile the shaderCode
-    glShaderSource(vertexShader, 1, &vertexShaderCodeChar, NULL);
+    glShaderSource(vertexShader, vertexShaderCode.size(), vertexShaderCodeCPoint, NULL);
     glCompileShader(vertexShader);
 
     //check the compile status
@@ -110,15 +84,21 @@ void OGLCreateWindow::createWindow()
     }
 
     //read the fragmentshader
-    fs::path fragmentShaderPath = "./SimpleFragmentShader.glsl";
-    std::string fragmentShaderCode = shaderReader(fragmentShaderPath);
-    const char* fragmentShaderCodeChar = fragmentShaderCode.c_str();
+    std::vector<std::string> fragmentShaderCode = shaderReader(fragmentShaderPath);
+    std::unique_ptr<const char* []> fragmentShaderCodeCharPointerList = std::make_unique<const char* []>(fragmentShaderCode.size());
+
+    for (int i = 0; i < fragmentShaderCode.size(); i++) {
+        fragmentShaderCodeCharPointerList[i] = fragmentShaderCode[i].c_str();;
+    }
+
+    auto fragmentShaderCodeCPoint = fragmentShaderCodeCharPointerList.get();
+
     //create a fragmentShader ID 
     unsigned int fragmentShader;
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
     //compile the shaderCode
-    glShaderSource(fragmentShader, 1, &fragmentShaderCodeChar, NULL);
+    glShaderSource(fragmentShader, fragmentShaderCode.size(), fragmentShaderCodeCPoint, NULL);
     glCompileShader(fragmentShader);
 
     //create a shader program
@@ -173,6 +153,32 @@ void OGLCreateWindow::createWindow()
     }
 }
 
+int OGLCreateWindow::shaderCompiler(shaderType typeName, fs::path vertexShaderPath)
+{
+    return 0;
+}
+
+std::vector<std::string> OGLCreateWindow::shaderReader(std::vector<fs::path> shaderPath)
+{
+    std::vector<std::string> shaderCodeList;
+    for (auto s : shaderPath) {
+        std::string shaderCode;
+        if (!fs::is_empty(s)) {
+            std::ifstream shaderStream(s);
+            std::string temp;
+            while (std::getline(shaderStream, temp)) {
+                shaderCode += temp;
+                shaderCode += "\n";
+            }
+            shaderCodeList.push_back(shaderCode);
+        }
+        else {
+            throw std::logic_error("Wrong shader directory!");
+        }
+    }
+    return shaderCodeList;
+}
+
 OGLCreateWindow::~OGLCreateWindow()
 {
     glfwTerminate();
@@ -182,21 +188,4 @@ OGLCreateWindow::~OGLCreateWindow()
 void OGLCallBack::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
-}
-
-std::string OGLCreateWindow::shaderReader(fs::path shaderPath)
-{
-    std::string shaderCode;
-    if (!fs::is_empty(shaderPath)) {
-        std::ifstream shaderStream(shaderPath);
-        std::string temp;
-        while (std::getline(shaderStream, temp)) {
-            shaderCode += temp;
-            shaderCode += "\n";
-        }
-    }
-    else {
-        throw std::logic_error("Wrong shader directory!");
-    }
-    return shaderCode;
 }

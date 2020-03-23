@@ -40,5 +40,8 @@
     <None Include="SimpleFragmentShader.glsl">
       <Filter>Source Files\Shader</Filter>
     </None>
+    <None Include="EmptyVertexShader.glsl">
+      <Filter>Source Files\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>
