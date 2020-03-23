@@ -42,7 +42,6 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     };
 
     //Create a VAO and a VBO
-    
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
@@ -57,33 +56,10 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     //  3.GL_STREAM_DRAW : it will change each times when it draws to the window.
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
 
-    int vertexShaderID = shaderCompiler(Vertex, vertexShaderPath);
-    int fragmentShaderID = shaderCompiler(Fragment, fragmentShaderPath);
+    unsigned int vertexShaderID = shaderCompiler(shaderType::Vertex, vertexShaderPath);
+    unsigned int fragmentShaderID = shaderCompiler(shaderType::Fragment, fragmentShaderPath);
 
-    //create a shader program
-    unsigned int shaderProgram;
-    shaderProgram = glCreateProgram();
-
-    //link the shaderprogram, veterx and fragment shader to one.
-    glAttachShader(shaderProgram, vertexShaderID);
-    glAttachShader(shaderProgram, fragmentShaderID);
-    glLinkProgram(shaderProgram);
-
-    //check the link status
-    //int checLinkStatus;
-    //glGetProgramiv(shaderProgram, GL_LINK_STATUS, &checLinkStatus);
-    //if (!checLinkStatus) {
-    //    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-    //    std::cout << "ERROR::LINK_FAILED\n" << infoLog << std::endl;
-    //}
-
-    //activate the shader program
-    glUseProgram(shaderProgram);
-
-    //now the shader is useless delete them when it is useless.
-    glDeleteShader(vertexShaderID);
-    glDeleteShader(fragmentShaderID);
-
+    unsigned int shaderProgramID = shaderProgramCreator(vertexShaderID, fragmentShaderID);
     //tell how to desc the vetex to the device
     /*
         glVertexAttribPointer params instuctrion:
@@ -102,7 +78,7 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     //loop the windows!
     while (!glfwWindowShouldClose(window))
     {
-        glUseProgram(shaderProgram);
+        glUseProgram(shaderProgramID);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -126,11 +102,13 @@ int OGLCreateWindow::shaderCompiler(shaderType typeName, std::vector<fs::path> s
 
     //create a shader ID 
     unsigned int shaderID;
-    if (typeName == Vertex) {
+    if (typeName == shaderType::Vertex) {
         shaderID = glCreateShader(GL_VERTEX_SHADER);
+        shaderIDList.push_back(shaderID);
     }
-    else if (typeName == Fragment) {
+    else if (typeName == shaderType::Fragment) {
         shaderID = glCreateShader(GL_FRAGMENT_SHADER);
+        shaderIDList.push_back(shaderID);
     }
     else {
         throw std::logic_error("Wrong Shader Type!");
@@ -173,10 +151,46 @@ std::vector<std::string> OGLCreateWindow::shaderReader(std::vector<fs::path> sha
     return shaderCodeList;
 }
 
+int OGLCreateWindow::shaderProgramCreator(int vertexID, int fragmentID)
+{
+    //create a shader program
+    unsigned int shaderProgram = glCreateProgram();
+    shaderProgramList.push_back(shaderProgram);
+    //link the shaderprogram, veterx and fragment shader to one.
+    glAttachShader(shaderProgram, vertexID);
+    glAttachShader(shaderProgram, fragmentID);
+    glLinkProgram(shaderProgram);
+
+    //check the link status
+    int checLinkStatus;
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &checLinkStatus);
+    char infoLog[512];
+    if (!checLinkStatus) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::string errLog = infoLog;
+        throw std::logic_error("ERROR::SHADER::COMPILATION_FAILED" + errLog);
+    }
+
+    //activate the shader program
+    glUseProgram(shaderProgram);
+
+    //now the shader is useless delete them when it is useless.
+    glDeleteShader(vertexID);
+    glDeleteShader(fragmentID);
+
+    return shaderProgram;
+}
+
 OGLCreateWindow::~OGLCreateWindow()
 {
+    for (auto v : shaderIDList) {
+        glDeleteShader(v);
+    }
+    for (auto p : shaderProgramList) {
+        glDeleteProgram(p);
+    }
+    glfwDestroyWindow(window);
     glfwTerminate();
-    delete window;
 }
 
 void OGLCallBack::framebuffer_size_callback(GLFWwindow* window, int width, int height)
