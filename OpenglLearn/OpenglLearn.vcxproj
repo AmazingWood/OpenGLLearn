@@ -150,10 +150,12 @@
   <ItemGroup>
     <ClCompile Include="glad.c" />
     <ClCompile Include="OGLCreateWindow.cpp" />
+    <ClCompile Include="OGLShader.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OGLCreateWindow.h" />
+    <ClInclude Include="OGLShader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderYellow.glsl" />

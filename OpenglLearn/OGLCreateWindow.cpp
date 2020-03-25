@@ -35,10 +35,11 @@ OGLCreateWindow::OGLCreateWindow(int windowWidth, int windowHeight, std::string 
 void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderPath, std::vector<fs::path> fragmentShaderPath)
 {
     //create a triangle's point list
-    std::array<float, 9> vertices = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f,
+    std::array<float, 18> vertices = {
+        //position             //color
+         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
+         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f
     };
 
     //Create a VAO and a VBO
@@ -55,15 +56,11 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     //  2.GL_DYNAMIC_DRAW: a lot of change;
     //  3.GL_STREAM_DRAW : it will change each times when it draws to the window.
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+    
+    OGLShader programListAlpha(vertexShaderPath, fragmentShaderPath);
+    
+    programListAlpha.addProgram("./SimpleVertexShader.glsl","FragmentShaderYellow.glsl","yellowFragment");
 
-    unsigned int vertexShaderID = shaderCompiler(shaderType::Vertex, vertexShaderPath);
-    unsigned int fragmentShaderID = shaderCompiler(shaderType::Fragment, fragmentShaderPath);
-    //std::vector<fs::path> fragmentYellow;
-    //fragmentYellow.push_back("./FragmentShaderYellow.glsl");
-    //unsigned int fragmentYellowShaderID = shaderCompiler(shaderType::Fragment, fragmentYellow);
-
-    unsigned int shaderProgramID = shaderProgramCreator(vertexShaderID, fragmentShaderID);
-    //unsigned int shaderProgramID2 = shaderProgramCreator(vertexShaderID, fragmentYellowShaderID);
     //tell how to desc the vetex to the device
     /*
         glVertexAttribPointer params instuctrion:
@@ -76,127 +73,42 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
         6.I really do not know what the fuck it is, the learnopengl-cn didn't told us yet.
     */
     //use the vetex info to activate the vetex attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     //loop the windows!
     while (!glfwWindowShouldClose(window))
     {
-        glUseProgram(shaderProgramID);
+
+        //glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        //glClear(GL_COLOR_BUFFER_BIT);
+
+
+        
+
+
+        //float timeValue = glfwGetTime();
+        //float GValue = (sin(timeValue) ) + 0.33f;
+        //float RValue = (cos(timeValue) ) + 0.66f;
+        //float BValue = (cos(timeValue) ) + 0.99f;
+        //int vertexColorLocation = glGetUniformLocation(shaderProgramID, "ourColor");
+        //glUniform4f(vertexColorLocation, RValue, GValue, BValue, 1.0f);
+        
+        programListAlpha.activateProgram("yellowFragment");
+
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
-        //shaderProgram2
-        //glUseProgram(shaderProgramID2);
-       // glBindVertexArray(VAO);
-        //glDrawArrays(GL_TRIANGLES, 3, 6);
-        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 }
 
-int OGLCreateWindow::shaderCompiler(shaderType typeName, std::vector<fs::path> shaderPath)
-{
-    //read the shader
-    std::vector<std::string> ShaderCode = shaderReader(shaderPath);
-    std::unique_ptr<const char* []> ShaderCodeCharPointerList = std::make_unique<const char* []>(ShaderCode.size());
-
-    for (int i = 0; i < ShaderCode.size(); i++) {
-        ShaderCodeCharPointerList[i] = ShaderCode[i].c_str();
-    }
-
-    auto ShaderCodeCPoint = ShaderCodeCharPointerList.get();
-
-    //create a shader ID 
-    unsigned int shaderID;
-    if (typeName == shaderType::Vertex) {
-        shaderID = glCreateShader(GL_VERTEX_SHADER);
-        shaderIDList.push_back(shaderID);
-    }
-    else if (typeName == shaderType::Fragment) {
-        shaderID = glCreateShader(GL_FRAGMENT_SHADER);
-        shaderIDList.push_back(shaderID);
-    }
-    else {
-        throw std::logic_error("Wrong Shader Type!");
-    }
-
-    //compile the shaderCode
-    glShaderSource(shaderID, ShaderCode.size(), ShaderCodeCPoint, NULL);
-    glCompileShader(shaderID);
-
-    //check the compile status
-    int checkCompileStatus;
-    char infoLog[512];
-    glGetShaderiv(shaderID, GL_COMPILE_STATUS, &checkCompileStatus);
-    if (checkCompileStatus != 1) {
-        glGetShaderInfoLog(shaderID, 512, NULL, infoLog);
-        std::string errLog = infoLog;
-        throw std::logic_error("ERROR::SHADER::COMPILATION_FAILED" + errLog);
-    }
-    return shaderID;
-}
-
-std::vector<std::string> OGLCreateWindow::shaderReader(std::vector<fs::path> shaderPath)
-{
-    std::vector<std::string> shaderCodeList;
-    for (auto s : shaderPath) {
-        std::string shaderCode;
-        if (!fs::is_empty(s)) {
-            std::ifstream shaderStream(s);
-            std::string temp;
-            while (std::getline(shaderStream, temp)) {
-                shaderCode += temp;
-                shaderCode += "\n";
-            }
-            shaderCodeList.push_back(shaderCode);
-        }
-        else {
-            throw std::logic_error("Wrong shader directory!");
-        }
-    }
-    return shaderCodeList;
-}
-
-int OGLCreateWindow::shaderProgramCreator(int vertexID, int fragmentID)
-{
-    //create a shader program
-    unsigned int shaderProgram = glCreateProgram();
-    shaderProgramList.push_back(shaderProgram);
-    //link the shaderprogram, veterx and fragment shader to one.
-    glAttachShader(shaderProgram, vertexID);
-    glAttachShader(shaderProgram, fragmentID);
-    glLinkProgram(shaderProgram);
-
-    //check the link status
-    int checLinkStatus;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &checLinkStatus);
-    char infoLog[512];
-    if (!checLinkStatus) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::string errLog = infoLog;
-        throw std::logic_error("ERROR::SHADER::COMPILATION_FAILED" + errLog);
-    }
-
-    //activate the shader program
-    glUseProgram(shaderProgram);
-
-    //now the shader is useless delete them when it is useless.
-    glDeleteShader(vertexID);
-    glDeleteShader(fragmentID);
-
-    return shaderProgram;
-}
-
 OGLCreateWindow::~OGLCreateWindow()
 {
-    for (auto v : shaderIDList) {
-        glDeleteShader(v);
-    }
-    for (auto p : shaderProgramList) {
-        glDeleteProgram(p);
-    }
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glfwDestroyWindow(window);

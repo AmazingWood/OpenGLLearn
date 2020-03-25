@@ -27,9 +27,15 @@
     <ClCompile Include="OGLCreateWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OGLShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OGLCreateWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OGLShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
