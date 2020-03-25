@@ -1,13 +1,31 @@
 #include "OGLShader.h"
 
+OGLShader::OGLShader(const std::vector<fs::path>& vertexPath, std::vector<fs::path>& fragmentPath, std::string programName)
+{
+    addProgram(vertexPath, fragmentPath, programName);
+}
+
 OGLShader::OGLShader(const fs::path& vertexPath, const fs::path& fragmentPath, std::string programName)
 {
     addProgram(vertexPath, fragmentPath, programName);
 }
 
-OGLShader::OGLShader(const std::vector<fs::path>& vertexPath, std::vector<fs::path>& fragmentPath, std::string programName)
+OGLShader::OGLShader(const fs::path& vertexPath, std::vector<fs::path>& fragmentPath, std::string programName)
 {
     addProgram(vertexPath, fragmentPath, programName);
+}
+
+OGLShader::OGLShader(const std::vector<fs::path>& vertexPath, const fs::path& fragmentPath, std::string programName)
+{
+    addProgram(vertexPath, fragmentPath, programName);
+}
+
+void OGLShader::addProgram(const std::vector<fs::path>& vertexPath, std::vector<fs::path>& fragmentPath, std::string programName)
+{
+    //read the shader
+    unsigned int vertexShaderID = shaderCompiler(shaderType::Vertex, vertexPath);
+    unsigned int fragmentShaderID = shaderCompiler(shaderType::Fragment, fragmentPath);
+    shaderProgramCreator(vertexShaderID, fragmentShaderID, programName);
 }
 
 void OGLShader::addProgram(const fs::path& vertexPath, const fs::path& fragmentPath, std::string programName)
@@ -20,20 +38,24 @@ void OGLShader::addProgram(const fs::path& vertexPath, const fs::path& fragmentP
     addProgram(vertexPathList, fragmentPathList, programName);
 }
 
-void OGLShader::addProgram(const std::vector<fs::path>& vertexPath, std::vector<fs::path>& fragmentPath, std::string programName)
+void OGLShader::addProgram(const fs::path& vertexPath, std::vector<fs::path>& fragmentPath, std::string programName)
 {
-    //read the shader
-    unsigned int vertexShaderID = shaderCompiler(shaderType::Vertex, vertexPath);
-    unsigned int fragmentShaderID = shaderCompiler(shaderType::Fragment, fragmentPath);
-    shaderProgramCreator(vertexShaderID, fragmentShaderID, programName);
+    auto vertexPathList{ std::vector<fs::path>() };
+    vertexPathList.push_back(vertexPath);
+    addProgram(vertexPathList, fragmentPath, programName);
 }
 
+void OGLShader::addProgram(const std::vector<fs::path>& vertexPath, const fs::path& fragmentPath, std::string programName)
+{
+    auto fragmentPathList{ std::vector<fs::path>() };
+    fragmentPathList.push_back(fragmentPath);
+    addProgram(vertexPath, fragmentPathList, programName);
+}
 
 void OGLShader::activateProgram(std::string progtamName)
 {
     glUseProgram(shaderProgramList[progtamName]);
 }
-
 
 OGLShader::~OGLShader()
 {
@@ -44,6 +66,10 @@ OGLShader::~OGLShader()
         glDeleteProgram(std::get<1>(p));
     }
 }
+
+/*
+*   some prvate function,stop here.
+*/
 
 std::vector<std::string> OGLShader::shaderReader(const std::vector<fs::path> &shaderPath)
 {

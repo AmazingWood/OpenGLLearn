@@ -1,14 +1,11 @@
 #pragma once
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #include <string>
-
 #include <filesystem>
-#include <fstream>
 #include <array>
-
 #include <iostream>
-
 #include "OGLShader.h"
 
 namespace fs = std::filesystem;
