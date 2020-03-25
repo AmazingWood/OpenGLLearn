@@ -52,9 +52,41 @@ void OGLShader::addProgram(const std::vector<fs::path>& vertexPath, const fs::pa
     addProgram(vertexPath, fragmentPathList, programName);
 }
 
-void OGLShader::activateProgram(std::string progtamName)
+unsigned int OGLShader::activateProgram(const std::string& programName)
 {
-    glUseProgram(shaderProgramList[progtamName]);
+    if (shaderProgramList.find(programName) != shaderProgramList.end()) {
+        glUseProgram(shaderProgramList[programName]);
+        return shaderProgramList[programName];
+    }
+    else {
+        throw std::logic_error("Wrong programName!");
+    }
+
+}
+
+unsigned int OGLShader::getProgramID(const std::string& programName) const //should be a const. but I cannot
+{
+    if (shaderProgramList.find(programName) != shaderProgramList.end()) {
+        return shaderProgramList.at(programName);
+    }
+    else {
+        throw std::logic_error("Wrong programName!");
+    }
+}
+
+void OGLShader::setBool(const std::string& programName, const std::string& name, bool value) const
+{
+    glUniform1i(glGetUniformLocation(getProgramID(programName), name.c_str()), (int)value);
+}
+
+void OGLShader::setInt(const std::string& programName, const std::string& name, int value) const
+{
+    glUniform1i(glGetUniformLocation(getProgramID(programName), name.c_str()), value);
+}
+
+void OGLShader::setFloat(const std::string& programName, const std::string& name, float value) const
+{
+    glUniform1f(glGetUniformLocation(getProgramID(programName), name.c_str()), value);
 }
 
 OGLShader::~OGLShader()

@@ -30,12 +30,14 @@ public:
 	void addProgram(const std::vector<fs::path>& vertexPath, const fs::path& fragmentPath, std::string programName);
 
 	//activate program
-	void activateProgram(std::string progtamName = "default");
+	unsigned int activateProgram(const std::string &programName = "default");
+	unsigned int getProgramID(const std::string &programName) const;	//should be a const. but I cannot
 
-	// uniform tools
-	//void setBool(const std::string& name, bool value) const;
-	//void setInt(const std::string& name, int value) const;
-	//void setFloat(const std::string& name, float value) const;
+	//uniform tools
+	void setBool(const std::string& programName, const std::string& name, bool value) const;
+	void setInt(const std::string& programName, const std::string& name, int value) const;
+	void setFloat(const std::string& programName, const std::string& name, float value) const;
+
 	~OGLShader();
 private:
 	std::map<std::string, unsigned int> shaderProgramList;
