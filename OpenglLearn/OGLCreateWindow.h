@@ -6,6 +6,9 @@
 #include <filesystem>
 #include <array>
 #include <iostream>
+
+#include "stb_image.h"
+
 #include "OGLShader.h"
 
 namespace fs = std::filesystem;

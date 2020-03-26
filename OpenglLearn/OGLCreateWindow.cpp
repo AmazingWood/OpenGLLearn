@@ -34,20 +34,48 @@ OGLCreateWindow::OGLCreateWindow(int windowWidth, int windowHeight, std::string 
 
 void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderPath, std::vector<fs::path> fragmentShaderPath)
 {
+    //load the texture code
+
+   
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // 为当前绑定的纹理对象设置环绕、过滤方式
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // 加载并生成纹理
+    int textureWidth, textureHeight, textureNrChannels;
+    //unsigned char* data = stbi_load("container.jpg", &textureWidth, &textureHeight, &textureNrChannels, 0);
+    std::unique_ptr<unsigned char> data(std::move(stbi_load("./assets/container.jpg", &textureWidth, &textureHeight, &textureNrChannels, 0)));
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data.get());
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data.get());
+
+
     //create a triangle's point list
-    std::array<float, 36> vertices = {
-        //position             //color
-         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
-         0.0f,  0.0f, 0.0f,  0.0f, 0.0f, 1.0f,
-         0.5f, 0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
-        -0.5f, 0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
+    std::array<float, 32> vertices = {
+        //position             //color          //texture
+         0.4f,  0.4f, 0.0f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+         0.4f, -0.4f, 0.0f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+        -0.4f, -0.4f, 0.0f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+        -0.4f,  0.4f, 0.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f
     };
 
     std::array<unsigned int, 6> indices {
         //position
-        3,4,2,
-        2,0,1
+        0,1,2,
+        0,2,3
     };
     unsigned int EBO;
     glGenBuffers(1, &EBO);
@@ -90,11 +118,14 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
         6.I really do not know what the fuck it is, the learnopengl-cn didn't told us yet.
     */
     //use the vetex info to activate the vetex attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
 
 
@@ -110,12 +141,11 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
         //float BValue = (cos(timeValue) ) + 0.99f;
         //int vertexColorLocation = glGetUniformLocation(shaderProgramID, "ourColor");
         
-        unsigned int programID = programListAlpha.activateProgram("default");
+        unsigned int programID = programListAlpha.activateProgram("yellowFragment");
         programListAlpha.setFloat("yellowFragment", "vertexOffset", 0.0f);
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

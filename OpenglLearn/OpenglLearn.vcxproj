@@ -152,10 +152,12 @@
     <ClCompile Include="OGLCreateWindow.cpp" />
     <ClCompile Include="OGLShader.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="stb_image_hack.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OGLCreateWindow.h" />
     <ClInclude Include="OGLShader.h" />
+    <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderYellow.glsl" />
