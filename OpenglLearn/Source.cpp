@@ -10,7 +10,7 @@
 namespace fs = std::filesystem;
 
 int main() {
-    OGLCreateWindow newWindow(1280, 720, "Hello World");
+    OGLCreateWindow newWindow(800, 600, "Hello World");
 
     std::vector<fs::path> VertexShaderList;
     std::vector<fs::path> FragmentShaderList;

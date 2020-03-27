@@ -35,22 +35,38 @@ OGLCreateWindow::OGLCreateWindow(int windowWidth, int windowHeight, std::string 
 void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderPath, std::vector<fs::path> fragmentShaderPath)
 {
     //load the texture code
-
+    //set the y axis to other side 
+    stbi_set_flip_vertically_on_load(true);
    
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    unsigned int texture1,texture2;
+    //gnerate and bind a texture value, nothing more
 
-    // 为当前绑定的纹理对象设置环绕、过滤方式
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+
+
+    // ATTENTION:there is no such things like glTextureParameterX, only glTexParameter!
+    // params:
+    // 1.target: which type of texture would u setup?
+    // there is GL_TEXTURE_1D,GL_TEXTURE_2D,GL_TEXTURE_3D and even more options.
+    // 2.pname: now we know that we have a 2d texture so we shall use S,R axis just like X,Y axis,so we input the GL_TEXTURE_WRAP_S,GL_TEXTURE_WRAP_R
+    // 3.params: setup how we deal with the texture, we want the texture repeat, so we input GL_REPEAT, and here's the other optional params:GL_REPEAT,GL_MIRRORED_REPEAT,GL_CLAMP_TO_EDGE and GL_CLAMP_TO_BORDER.
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // params instruction:
+    // 2 now we chose the GL_TEXTURE_MIN_FILTER and GL_TEXTURE_MAG_FILTER, to make the opengl know how we deal with the texture when we magnify or minify it.
+    // 3 we can chose two way to process the texture when we do those to commands：GL_NEAREST，like a bit photo，GL_LINEAR output the avg color to each pixel when we minify or magnify it.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // 加载并生成纹理
+
+    //read the pic through stb_image.h
     int textureWidth, textureHeight, textureNrChannels;
-    //unsigned char* data = stbi_load("container.jpg", &textureWidth, &textureHeight, &textureNrChannels, 0);
-    std::unique_ptr<unsigned char> data(std::move(stbi_load("./assets/container.jpg", &textureWidth, &textureHeight, &textureNrChannels, 0)));
+
+    std::unique_ptr<unsigned char, std::function<void(unsigned char*)>> data(stbi_load("./assets/container.jpg", &textureWidth, &textureHeight, &textureNrChannels, 0), [](unsigned char* del) {stbi_image_free(del); });
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data.get());
@@ -58,9 +74,47 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     }
     else
     {
-        std::cout << "Failed to load texture" << std::endl;
+        throw std::logic_error("Failed to load texture");
     }
-    stbi_image_free(data.get());
+
+
+    // texture 2
+    // -----------------
+
+
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    // ATTENTION:there is no such things like glTextureParameterX, only glTexParameter!
+    // params:
+    // 1.target: which type of texture would u setup?
+    // there is GL_TEXTURE_1D,GL_TEXTURE_2D,GL_TEXTURE_3D and even more options.
+    // 2.pname: now we know that we have a 2d texture so we shall use S,R axis just like X,Y axis,so we input the GL_TEXTURE_WRAP_S,GL_TEXTURE_WRAP_R
+    // 3.params: setup how we deal with the texture, we want the texture repeat, so we input GL_REPEAT, and here's the other optional params:GL_REPEAT,GL_MIRRORED_REPEAT,GL_CLAMP_TO_EDGE and GL_CLAMP_TO_BORDER.
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // params instruction:
+    // 2 now we chose the GL_TEXTURE_MIN_FILTER and GL_TEXTURE_MAG_FILTER, to make the opengl know how we deal with the texture when we magnify or minify it.
+    // 3 we can chose two way to process the texture when we do those to commands：GL_NEAREST，like a bit photo，GL_LINEAR output the avg color to each pixel when we minify or magnify it.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+    //read the pic through stb_image.h
+    int textureWidth2, textureHeight2, textureNrChannels2;
+    std::unique_ptr<unsigned char, std::function<void(unsigned char*)>> data2(stbi_load("./assets/awesomeface.png", &textureWidth2, &textureHeight2, &textureNrChannels2, 0), [](unsigned char* del) {stbi_image_free(del); });
+    if (data2)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth2, textureHeight2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2.get());
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        throw std::logic_error("Failed to load texture");
+    }
+
 
 
     //create a triangle's point list
@@ -80,7 +134,6 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     unsigned int EBO;
     glGenBuffers(1, &EBO);
 
-
     //Create a VAO and a VBO
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -88,10 +141,6 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     //Bind VAO and VBO
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-
-    
-
 
     //copy the points to the Buffer params desc: 1.buffer type; 2.data size; 3.the data; 4.manage method type;
     //The types of the manage method:
@@ -128,22 +177,25 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     glEnableVertexAttribArray(2);
 
 
+    unsigned int programID = programListAlpha.activateProgram("yellowFragment");
+    programListAlpha.setInt("yellowFragment", "texture1", 0);
+    programListAlpha.setInt("yellowFragment", "texture2", 1);
 
     //loop the windows!
     while (!glfwWindowShouldClose(window))
     {
-        //glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        //glClear(GL_COLOR_BUFFER_BIT);
-
-        //float timeValue = glfwGetTime();
-        //float GValue = (sin(timeValue) ) + 0.33f;
-        //float RValue = (cos(timeValue) ) + 0.66f;
-        //float BValue = (cos(timeValue) ) + 0.99f;
-        //int vertexColorLocation = glGetUniformLocation(shaderProgramID, "ourColor");
-        
-        unsigned int programID = programListAlpha.activateProgram("yellowFragment");
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
         programListAlpha.setFloat("yellowFragment", "vertexOffset", 0.0f);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        
+        //more than one texture will binded the box
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+
+
+        programListAlpha.activateProgram("yellowFragment");
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -164,3 +216,5 @@ void OGLCallBack::framebuffer_size_callback(GLFWwindow* window, int width, int h
 {
     glViewport(0, 0, width, height);
 }
+
+

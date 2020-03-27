@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <array>
 #include <iostream>
+#include <functional>
 
 #include "stb_image.h"
 
