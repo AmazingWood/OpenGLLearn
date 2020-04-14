@@ -42,6 +42,7 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     //gnerate and bind a texture value, nothing more
 
     glGenTextures(1, &texture1);
+    std::cout << texture1 <<std::endl;
     glBindTexture(GL_TEXTURE_2D, texture1);
 
 
@@ -51,16 +52,20 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     // 1.target: which type of texture would u setup?
     // there is GL_TEXTURE_1D,GL_TEXTURE_2D,GL_TEXTURE_3D and even more options.
     // 2.pname: now we know that we have a 2d texture so we shall use S,R axis just like X,Y axis,so we input the GL_TEXTURE_WRAP_S,GL_TEXTURE_WRAP_R
-    // 3.params: setup how we deal with the texture, we want the texture repeat, so we input GL_REPEAT, and here's the other optional params:GL_REPEAT,GL_MIRRORED_REPEAT,GL_CLAMP_TO_EDGE and GL_CLAMP_TO_BORDER.
+    // 3.params: setup how we deal with the texture, we want the texture repeat, so we input GL_REPEAT, and here's the other optional params:
+    //GL_REPEAT,
+    //GL_MIRRORED_REPEAT,
+    //GL_CLAMP_TO_EDGE and 
+    //GL_CLAMP_TO_BORDER.
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     // params instruction:
     // 2 now we chose the GL_TEXTURE_MIN_FILTER and GL_TEXTURE_MAG_FILTER, to make the opengl know how we deal with the texture when we magnify or minify it.
     // 3 we can chose two way to process the texture when we do those to commands£ºGL_NEAREST£¬like a bit photo£¬GL_LINEAR output the avg color to each pixel when we minify or magnify it.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 
     //read the pic through stb_image.h
@@ -83,6 +88,7 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
 
 
     glGenTextures(1, &texture2);
+    std::cout << texture2;
     glBindTexture(GL_TEXTURE_2D, texture2);
 
     // ATTENTION:there is no such things like glTextureParameterX, only glTexParameter!
@@ -92,14 +98,14 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     // 2.pname: now we know that we have a 2d texture so we shall use S,R axis just like X,Y axis,so we input the GL_TEXTURE_WRAP_S,GL_TEXTURE_WRAP_R
     // 3.params: setup how we deal with the texture, we want the texture repeat, so we input GL_REPEAT, and here's the other optional params:GL_REPEAT,GL_MIRRORED_REPEAT,GL_CLAMP_TO_EDGE and GL_CLAMP_TO_BORDER.
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     // params instruction:
     // 2 now we chose the GL_TEXTURE_MIN_FILTER and GL_TEXTURE_MAG_FILTER, to make the opengl know how we deal with the texture when we magnify or minify it.
     // 3 we can chose two way to process the texture when we do those to commands£ºGL_NEAREST£¬like a bit photo£¬GL_LINEAR output the avg color to each pixel when we minify or magnify it.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 
     //read the pic through stb_image.h
@@ -180,13 +186,32 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     unsigned int programID = programListAlpha.activateProgram("yellowFragment");
     programListAlpha.setInt("yellowFragment", "texture1", 0);
     programListAlpha.setInt("yellowFragment", "texture2", 1);
+    float mixValue = 0.2;
 
+    //some shit to use mat
+    auto trans{ glm::mat4(1.0f) };
+   
     //loop the windows!
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         programListAlpha.setFloat("yellowFragment", "vertexOffset", 0.0f);
+
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        {
+            mixValue += 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
+            if (mixValue >= 1.0f)
+                mixValue = 1.0f;
+        }
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        {
+            mixValue -= 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
+            if (mixValue <= 0.0f)
+                mixValue = 0.0f;
+        }
+
+        programListAlpha.setFloat("yellowFragment", "mixVal", mixValue);
         
         //more than one texture will binded the box
         glActiveTexture(GL_TEXTURE0);
@@ -199,6 +224,15 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+        //this is the mat trans code
+
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        unsigned int transformLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "transform");                                
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+        trans = glm::mat4(1.0f);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -216,5 +250,7 @@ void OGLCallBack::framebuffer_size_callback(GLFWwindow* window, int width, int h
 {
     glViewport(0, 0, width, height);
 }
+
+
 
 
