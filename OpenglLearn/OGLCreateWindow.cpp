@@ -34,15 +34,16 @@ OGLCreateWindow::OGLCreateWindow(int windowWidth, int windowHeight, std::string 
 
 void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderPath, std::vector<fs::path> fragmentShaderPath)
 {
+    //zbuffer check
+    glEnable(GL_DEPTH_TEST);
     //load the texture code
     //set the y axis to other side 
     stbi_set_flip_vertically_on_load(true);
    
-    unsigned int texture1,texture2;
+
     //gnerate and bind a texture value, nothing more
 
     glGenTextures(1, &texture1);
-    std::cout << texture1 <<std::endl;
     glBindTexture(GL_TEXTURE_2D, texture1);
 
 
@@ -88,7 +89,6 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
 
 
     glGenTextures(1, &texture2);
-    std::cout << texture2;
     glBindTexture(GL_TEXTURE_2D, texture2);
 
     // ATTENTION:there is no such things like glTextureParameterX, only glTexParameter!
@@ -124,6 +124,8 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
 
 
     //create a triangle's point list
+    /*
+    
     std::array<float, 32> vertices = {
         //position             //color          //texture
          0.4f,  0.4f, 0.0f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
@@ -131,13 +133,58 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
         -0.4f, -0.4f, 0.0f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
         -0.4f,  0.4f, 0.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f
     };
+    
+    */
+
+    std::array<float, 180> vertices = {
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+    };
 
     std::array<unsigned int, 6> indices {
         //position
         0,1,2,
         0,2,3
     };
-    unsigned int EBO;
     glGenBuffers(1, &EBO);
 
     //Create a VAO and a VBO
@@ -155,8 +202,8 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     //  3.GL_STREAM_DRAW : it will change each times when it draws to the window.
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
     OGLShader programListAlpha(vertexShaderPath, fragmentShaderPath);
     
     programListAlpha.addProgram("./SimpleVertexShader.glsl","FragmentShaderYellow.glsl","yellowFragment");
@@ -173,14 +220,14 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
         6.I really do not know what the fuck it is, the learnopengl-cn didn't told us yet.
     */
     //use the vetex info to activate the vetex attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    //glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
 
     unsigned int programID = programListAlpha.activateProgram("yellowFragment");
@@ -188,6 +235,13 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     programListAlpha.setInt("yellowFragment", "texture2", 1);
     float mixValue = 0.2;
 
+    //we are going to the 3d world, this is the code
+    model = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    view = glm::mat4(1.0f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    projection = glm::mat4(1.0f); 
+    projection = glm::perspective(glm::radians(45.0f), 600 / 800.0f, 0.1f, 100.0f);
     //some shit to use mat
     auto trans{ glm::mat4(1.0f) };
    
@@ -195,7 +249,8 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        //glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         programListAlpha.setFloat("yellowFragment", "vertexOffset", 0.0f);
 
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
@@ -222,17 +277,24 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
 
         programListAlpha.activateProgram("yellowFragment");
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        //glDrawElements(GL_TRIANGLES, 0, GL_UNSIGNED_INT, 0);
 
         //this is the mat trans code
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-
-        unsigned int transformLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "transform");                                
+        unsigned int transformLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "transform");
+        unsigned int modelLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "model");
+        unsigned int viewLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "view");
+        unsigned int projectionLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "projection");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
-        trans = glm::mat4(1.0f);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        
+
+        model = glm::mat4(1.0f);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -242,6 +304,9 @@ OGLCreateWindow::~OGLCreateWindow()
 {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    glDeleteTextures(1, &texture1);
+    glDeleteTextures(1, &texture2);
     glfwDestroyWindow(window);
     glfwTerminate();
 }
