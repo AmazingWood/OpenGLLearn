@@ -180,6 +180,19 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
+    glm::vec3 cubePositions[] = {
+        glm::vec3(0.0f,  0.0f,  0.0f),
+        glm::vec3(2.0f,  5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f,  3.0f, -7.5f),
+        glm::vec3(1.3f, -2.0f, -2.5f),
+        glm::vec3(1.5f,  2.0f, -2.5f),
+        glm::vec3(1.5f,  0.2f, -1.5f),
+        glm::vec3(-1.3f,  1.0f, -1.5f)
+    };
+
     std::array<unsigned int, 6> indices {
         //position
         0,1,2,
@@ -277,11 +290,8 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
 
         programListAlpha.activateProgram("yellowFragment");
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        //glDrawElements(GL_TRIANGLES, 0, GL_UNSIGNED_INT, 0);
 
-        //this is the mat trans code
-        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+
 
         unsigned int transformLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "transform");
         unsigned int modelLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "model");
@@ -289,10 +299,24 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
         unsigned int projectionLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "projection");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-        
+
+        //ten times draw with different cood to get 10 cubes
+        for (unsigned int i = 0; i < 10; i++)
+        {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * i;
+            //this is the mat trans code
+            model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+            //model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+        //glDrawArrays(GL_TRIANGLES, 0, 36);
+        //glDrawElements(GL_TRIANGLES, 0, GL_UNSIGNED_INT, 0);
 
         model = glm::mat4(1.0f);
         glfwSwapBuffers(window);
