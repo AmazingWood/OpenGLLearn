@@ -89,6 +89,11 @@ void OGLShader::setFloat(const std::string& programName, const std::string& name
     glUniform1f(glGetUniformLocation(getProgramID(programName), name.c_str()), value);
 }
 
+void OGLShader::setMat4(const std::string& programName, const std::string& name, glm::mat4 value) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(getProgramID(programName), name.c_str()), 1, GL_FALSE, &value[0][0]);
+}
+
 OGLShader::~OGLShader()
 {
     for (auto v : shaderIDList) {

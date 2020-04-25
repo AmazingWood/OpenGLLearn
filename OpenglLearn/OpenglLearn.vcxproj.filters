@@ -16,6 +16,9 @@
     <Filter Include="Source Files\Shader">
       <UniqueIdentifier>{2550f95a-8cfd-4982-b134-e4ae133e0922}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Shader\commonModelShader">
+      <UniqueIdentifier>{6e176c49-1ba6-4d59-87b7-afdfa2917b15}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -72,6 +75,12 @@
     </None>
     <None Include="FragmentShaderYellow.glsl">
       <Filter>Source Files\Shader</Filter>
+    </None>
+    <None Include="model_vertex.glsl">
+      <Filter>Source Files\Shader\commonModelShader</Filter>
+    </None>
+    <None Include="model_fragment.glsl">
+      <Filter>Source Files\Shader\commonModelShader</Filter>
     </None>
   </ItemGroup>
 </Project>

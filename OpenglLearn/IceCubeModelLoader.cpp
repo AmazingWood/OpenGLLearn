@@ -81,8 +81,9 @@ IceCubeMesh IceCubeModelLoader::processMesh(aiMesh* mesh, const aiScene* scene)
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];
-		for (unsigned int j = 0; j < face.mNumIndices; j++)
+		for (unsigned int j = 0; j < face.mNumIndices; j++) {
 			indexList.push_back(face.mIndices[j]);
+		}
 	}
 	// process texture
 	if (mesh->mMaterialIndex >= 0)
@@ -142,7 +143,8 @@ unsigned int IceCubeModelLoader::textureLoader(const fs::path& path, const fs::p
 	glGenTextures(1, &textureID);
 
 	int width, height, nrComponents;
-	std::unique_ptr<unsigned char, std::function<void(unsigned char*)>> data(stbi_load(filePath.string().c_str(), &width, &height, &nrComponents, 0), [](unsigned char* del) {stbi_image_free(del); });
+	//std::unique_ptr<unsigned char, std::function<void(unsigned char*)>> data(stbi_load(filePath.string().c_str(), &width, &height, &nrComponents, 0), [](unsigned char* del) {stbi_image_free(del); });
+	unsigned char* data = stbi_load(filePath.string().c_str(), &width, &height, &nrComponents, 0);
 	if (data)
 	{
 		GLenum format;
@@ -156,17 +158,20 @@ unsigned int IceCubeModelLoader::textureLoader(const fs::path& path, const fs::p
 			format = GL_RGBA;
 		}
 		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data.get());
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data); //data.get()
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
 	}
 	else
 	{
 		throw std::logic_error("Texture failed to load at path: " + path.string());
+		stbi_image_free(data);
 	}
 	return textureID;
 }

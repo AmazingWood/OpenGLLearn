@@ -26,12 +26,8 @@ void IceCubeMesh::setupMesh()
 	*/
 
 	//setup verticle data
-	glBufferData(GL_ARRAY_BUFFER, verticleList.size() * sizeof(verticleList), &verticleList[0], GL_STATIC_DRAW);
-	//setup EBO data
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexList.size() * sizeof(unsigned int), &indexList[0], GL_STATIC_DRAW);
-
-	//import the data(buffer and index) to graphic card
 	glBufferData(GL_ARRAY_BUFFER, verticleList.size() * sizeof(VertexData), &verticleList[0], GL_STATIC_DRAW);
+	//setup EBO data
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexList.size() * sizeof(unsigned int), &indexList[0], GL_STATIC_DRAW);
 
@@ -42,17 +38,16 @@ void IceCubeMesh::setupMesh()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offsetof(VertexData, normalVec));
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offsetof(VertexData, textureVec));
-
 	glBindVertexArray(0);
 }
 //u have to fix this
 void IceCubeMesh::drawMesh(OGLShader shader, std::string programName)
 {
-	unsigned int diffuseNr = 1, specularNr = 1;
+	unsigned int diffuseNr = 1, specularNr = 1, normalNr = 1, heightNr = 1;
 	for (unsigned int i = 0; i < textureList.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i); 
-		// 获取纹理序号（diffuse_textureN 中的 N）
+		// retrieve texture number (the N in diffuse_textureN)
 		std::string number;
 		std::string name = textureList[i].textureType;
 		if (name == "texture_diffuse") {
@@ -61,20 +56,28 @@ void IceCubeMesh::drawMesh(OGLShader shader, std::string programName)
 		else if (name == "texture_specular") {
 			number = std::to_string(specularNr++);
 		}
-		shader.setInt(programName, "material." + name + number, static_cast<int>(i));
+		else if (name == "texture_normal") {
+			number = std::to_string(normalNr++);
+		}
+		else if (name == "texture_height") {
+			number = std::to_string(heightNr++);
+		}
+		shader.setInt(programName, "material." + name + number, i);
 		glBindTexture(GL_TEXTURE_2D, textureList[i].textureId);
 	}
-	glActiveTexture(GL_TEXTURE0);
 
-	// 绘制网格
+	// draw mesh
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indexList.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+
+	// always good practice to set everything back to defaults once configured.
+	glActiveTexture(GL_TEXTURE0);
 }
 
 IceCubeMesh::~IceCubeMesh()
 {
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
+	//glDeleteVertexArrays(1, &VAO);
+	//glDeleteBuffers(1, &VBO);
+	//glDeleteBuffers(1, &EBO);
 }

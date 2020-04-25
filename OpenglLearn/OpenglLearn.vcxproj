@@ -167,6 +167,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderYellow.glsl" />
+    <None Include="model_fragment.glsl" />
+    <None Include="model_vertex.glsl" />
     <None Include="SimpleFragmentShader.glsl" />
     <None Include="SimpleVertexShader.glsl" />
   </ItemGroup>

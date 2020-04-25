@@ -9,6 +9,10 @@
 #include <fstream>
 #include <iostream>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 namespace fs = std::filesystem;
 
 enum class shaderType {
@@ -37,6 +41,7 @@ public:
 	void setBool(const std::string& programName, const std::string& name, bool value) const;
 	void setInt(const std::string& programName, const std::string& name, int value) const;
 	void setFloat(const std::string& programName, const std::string& name, float value) const;
+	void setMat4(const std::string& programName, const std::string& name, glm::mat4 value) const;
 
 	~OGLShader();
 private:

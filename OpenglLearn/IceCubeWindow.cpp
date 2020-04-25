@@ -21,6 +21,8 @@ IceCubeWindow::IceCubeWindow(int windowWidth, int windowHeight, std::string wind
 	}
 	glViewport(0, 0, windowWidth, windowHeight);
 
+	glEnable(GL_DEPTH_TEST);
+
 	/*
 	*
 	*	we should deal with the callback list at here, just like this:
@@ -33,15 +35,34 @@ IceCubeWindow::IceCubeWindow(int windowWidth, int windowHeight, std::string wind
 
 void IceCubeWindow::IceCubeDisplay()
 {
-
-	IceCubeModelLoader ourModel("assets/nanosuit/nanosuit.obj");
+	OGLShader modelShader("./model_vertex.glsl", "./model_fragment.glsl", "modelShader");
+	IceCubeModelLoader ourModel("./assets/nanosuit/nanosuit.obj");
 
 	//loop the windows!
 	while (!glfwWindowShouldClose(window))
 	{
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(0.05f, 0.3f, 0.05f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		//******************************************************should be delete
+		modelShader.activateProgram("modelShader");
+
+		// view/projection transformations
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800.0 / (float)600.0, 0.1f, 100.0f);
+		glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 4.5f), glm::vec3(0.0f, 0.0f, 0.0f) + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelShader.setMat4("modelShader", "projection", projection);
+		modelShader.setMat4("modelShader", "view", view);
+
+		// render the loaded model
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene 
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+		modelShader.setMat4("modelShader", "model", model);
+
+		ourModel.drawMeshes(modelShader, "modelShader");
+		//******************************************************should be delete
+
+		
 		/*
 		*
 		*	insert a function, to transport the model which we need to display in the window.

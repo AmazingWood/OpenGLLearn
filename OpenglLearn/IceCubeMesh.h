@@ -17,6 +17,8 @@
 *   texture name rule
 *   texture_diffuseN
 *   texture_specularN
+*   texture_normalN
+*   texture_heightN
 */
 
 struct VertexData {
