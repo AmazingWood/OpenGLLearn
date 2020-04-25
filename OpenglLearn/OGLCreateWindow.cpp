@@ -18,6 +18,7 @@ OGLCreateWindow::OGLCreateWindow(int windowWidth, int windowHeight, std::string 
     {
         throw std::logic_error("Failed to create GLFW window");
     }
+
     glfwMakeContextCurrent(window);
 
     //glad to manage the point
@@ -36,6 +37,7 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
 {
     //zbuffer check
     glEnable(GL_DEPTH_TEST);
+
     //load the texture code
     //set the y axis to other side 
     stbi_set_flip_vertically_on_load(true);
@@ -45,8 +47,6 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
 
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
-
-
 
     // ATTENTION:there is no such things like glTextureParameterX, only glTexParameter!
     // params:
@@ -67,7 +67,6 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     // 3 we can chose two way to process the texture when we do those to commands£ºGL_NEAREST£¬like a bit photo£¬GL_LINEAR output the avg color to each pixel when we minify or magnify it.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
 
     //read the pic through stb_image.h
     int textureWidth, textureHeight, textureNrChannels;
@@ -121,21 +120,6 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
         throw std::logic_error("Failed to load texture");
     }
 
-
-
-    //create a triangle's point list
-    /*
-    
-    std::array<float, 32> vertices = {
-        //position             //color          //texture
-         0.4f,  0.4f, 0.0f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
-         0.4f, -0.4f, 0.0f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
-        -0.4f, -0.4f, 0.0f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
-        -0.4f,  0.4f, 0.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f
-    };
-    
-    */
-
     std::array<float, 180> vertices = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -180,24 +164,6 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
-    glm::vec3 cubePositions[] = {
-        glm::vec3(0.0f,  0.0f,  0.0f),
-        glm::vec3(2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f,  2.0f, -2.5f),
-        glm::vec3(1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
-    };
-
-    std::array<unsigned int, 6> indices {
-        //position
-        0,1,2,
-        0,2,3
-    };
     glGenBuffers(1, &EBO);
 
     //Create a VAO and a VBO
@@ -236,9 +202,6 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    //glEnableVertexAttribArray(1);
-
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
@@ -246,61 +209,29 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
     unsigned int programID = programListAlpha.activateProgram("yellowFragment");
     programListAlpha.setInt("yellowFragment", "texture1", 0);
     programListAlpha.setInt("yellowFragment", "texture2", 1);
-    float mixValue = 0.2;
 
     //we are going to the 3d world, this is the code
     model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(45.0f), glm::vec3(1.0f, 1.0f, 0.0f));
     view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    projection = glm::mat4(1.0f); 
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
+    projection = glm::mat4(1.0f);
     projection = glm::perspective(glm::radians(45.0f), 600 / 800.0f, 0.1f, 100.0f);
-    //some shit to use mat
-    auto trans{ glm::mat4(1.0f) };
-   
 
-    //camera
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-    glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+    unsigned int modelLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "model");
+    unsigned int viewLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "view");
+    unsigned int projectionLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "projection");
 
-    glm::mat4 view = glm::mat4(1.0f);
-    view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
-                        glm::vec3(0.0f, 0.0f, 0.0f),
-                        glm::vec3(0.0f, 1.0f, 0.0f));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     //loop the windows!
     while (!glfwWindowShouldClose(window))
     {
-        float radius = 10.0f;
-        float camX = sin(glfwGetTime()) * radius;
-        float camZ = cos(glfwGetTime()) * radius;
-        glm::mat4 view;
-        view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-
-
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        //glClear(GL_COLOR_BUFFER_BIT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         programListAlpha.setFloat("yellowFragment", "vertexOffset", 0.0f);
-
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        {
-            mixValue += 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
-            if (mixValue >= 1.0f)
-                mixValue = 1.0f;
-        }
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        {
-            mixValue -= 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
-            if (mixValue <= 0.0f)
-                mixValue = 0.0f;
-        }
-
-        programListAlpha.setFloat("yellowFragment", "mixVal", mixValue);
         
         //more than one texture will binded the box
         glActiveTexture(GL_TEXTURE0);
@@ -308,36 +239,9 @@ void OGLCreateWindow::createWindowWithShader(std::vector<fs::path> vertexShaderP
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
-
         programListAlpha.activateProgram("yellowFragment");
         glBindVertexArray(VAO);
-
-
-
-        unsigned int transformLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "transform");
-        unsigned int modelLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "model");
-        unsigned int viewLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "view");
-        unsigned int projectionLoc = glGetUniformLocation(programListAlpha.getProgramID("yellowFragment"), "projection");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-        //ten times draw with different cood to get 10 cubes
-        for (unsigned int i = 0; i < 10; i++)
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            //this is the mat trans code
-            //model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-            //model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-        //glDrawArrays(GL_TRIANGLES, 0, 36);
-        //glDrawElements(GL_TRIANGLES, 0, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 180);
 
         model = glm::mat4(1.0f);
         glfwSwapBuffers(window);

@@ -29,6 +29,7 @@ private:
 	fs::path fragmentShaderPath;
 	unsigned int VAO = 0, VBO = 0, EBO = 0;
 	unsigned int texture1, texture2;
+
 	glm::mat4 model, view, projection;
 	std::vector<unsigned int> shaderIDList;
 	std::vector<unsigned int> shaderProgramList;

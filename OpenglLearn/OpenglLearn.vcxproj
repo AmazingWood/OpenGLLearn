@@ -105,14 +105,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Libs\glfw\glfw-3.3.2\include;D:\Projects\OpenGLLearn\OpenglLearn\include;D:\Libs\glm\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Libs\glfw\glfw-3.3.2\include;D:\Projects\OpenGLLearn\OpenglLearn\include;D:\Libs\glm\glm-0.9.9.8;D:\Libs\assimp\assimp-4.1.0\include;D:\Libs\assimp\assimp-4.1.0\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Libs\glfw\glfw-3.3.2\build\src\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Libs\glfw\glfw-3.3.2\build\src\Debug;D:\Libs\assimp\assimp-4.1.0\build\code\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -149,17 +149,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="glad.c" />
-    <ClCompile Include="ModelReader.cpp" />
+    <ClCompile Include="IceCubeMesh.cpp" />
+    <ClCompile Include="IceCubeModelLoader.cpp" />
+    <ClCompile Include="IceCubeWindow.cpp" />
     <ClCompile Include="OGLCreateWindow.cpp" />
     <ClCompile Include="OGLShader.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="stb_image_hack.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ModelReader.h" />
+    <ClInclude Include="IceCubeMesh.h" />
+    <ClInclude Include="IceCubeModelLoader.h" />
     <ClInclude Include="OGLCreateWindow.h" />
     <ClInclude Include="OGLShader.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="IceCubeWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderYellow.glsl" />
